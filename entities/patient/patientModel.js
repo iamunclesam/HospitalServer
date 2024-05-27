@@ -80,10 +80,6 @@ const PatientSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  medicalHistory: {
-    type: [MedicalHistorySchema],
-    default: [],
-  },
   emergencyContact: {
     name: {
       type: String,

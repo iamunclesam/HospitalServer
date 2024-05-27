@@ -41,7 +41,57 @@ const setAppointment = async (req, res) => {
   }
 };
 
+const updateAppointment = async (req, res) => {
+  try {
+    const { patientId, doctorId, appointmentId } = req.params;
+
+    const patient = await Patient.findById(patientId).populate(
+      "currentRecord.assignedDoctor"
+    );
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    const doctor = await Doctor.findById(doctorId);
+
+    if(!doctor){
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    let doctorAssignedRecord = null;
+    for (const record of patient.currentRecord) {
+      if (record.assignedDoctor && record.assignedDoctor._id.equals(doctorId)) {
+        doctorAssignedRecord = record;
+        break;
+      }
+    }
+
+    if (!doctorAssignedRecord) {
+      return res.status(403).json({
+        message:
+          "Access denied: No records assigned to this doctor for this patient",
+      });
+    } 
+
+    const updatedAppointment = await Appointment.findByIdAndUpdate(req.body, appointmentId)
+    res.status(200).json({message: "appointment updated", data: updatedAppointment})
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+const getAllAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find({});
+    res.status(200).json({data: appointments})
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 module.exports = {
   setAppointment,
+  updateAppointment,
+  getAllAppointments
   // Other appointment-related functions
 };

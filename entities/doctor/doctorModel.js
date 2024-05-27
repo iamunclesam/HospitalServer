@@ -53,10 +53,12 @@ const DoctorSchema = mongoose.Schema({
     required: true,
   },
 
-  assignedPatient: {
-    type: String,
-    ref: "Patient",
-  },
+  assignedPatient: [
+    {
+      patient: mongoose.Schema.Types.ObjectId,
+      date: Date
+    }
+  ]
 });
 
 const Doctor = mongoose.model("Doctor", DoctorSchema);

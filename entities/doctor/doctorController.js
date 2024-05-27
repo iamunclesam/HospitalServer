@@ -154,11 +154,7 @@ const viewPatientRecords = async (req, res) => {
         email: patient.email,
         dateOfBirth: patient.dateOfBirth,
         gender: patient.gender,
-        currentRecord: {
-          assignedDoctor: doctorAssignedRecord.assignedDoctor._id,
-          dateOfAdmission: doctorAssignedRecord.dateOfAdmission,
-          dateOfDischarge: doctorAssignedRecord.dateOfDischarge,
-        },
+        currentRecord: patient.currentRecord
       },
     };
 
@@ -254,14 +250,42 @@ const admitPatient = async (req, res) => {
   // Logic to admit a patient
 };
 
+const getMedicalHistory = async (req, res) => {
+  try {
+    const {patientId} = req.params;
+    const patient = await Patient.findById(patientId);
+
+    if(!patient) {
+      return res.status(404).json({message: "Patient Not Found"})
+    }
+    const medicalHistory = await MedicalHistory.findOne({ patient: patientId }).populate('records.assignedDoctor');
+
+    if (!medicalHistory) {
+      return res.status(404).json({ message: "No medical history found for this patient" });
+    }
+
+    res.status(200).json({ message: "Medical history retrieved successfully", data: medicalHistory });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 const dischargePatient = async (req, res) => {
   try {
-    const { patientId } = req.params;
+    const { patientId, doctorId } = req.params;
 
     // Find the patient by ID
-    const patient = await Patient.findById(patientId).populate('currentRecord.assignedDoctor');
+    const patient = await Patient.findById(patientId).populate({
+      path: 'currentRecord.assignedDoctor',
+      select: '_id' // Include only the _id field
+    });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
+    }
+
+    const doctor = await Doctor.findById(doctorId);
+    if(!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
     }
 
     // Check if there are current records
@@ -283,9 +307,14 @@ const dischargePatient = async (req, res) => {
 
     // Clear the current record of the patient
     patient.currentRecord = [];
+    
+     // Remove the patient from the doctor's assigned patients list
+     doctor.assignedPatient = doctor.assignedPatient.filter(assigned => !assigned.patient.equals(patientId));
+
+     await doctor.save();
     await patient.save();
 
-    res.status(200).json({ message: "Patient discharged and record moved to medical history" });
+    res.status(200).json({ message: "Patient dischargedy" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -328,4 +357,5 @@ module.exports = {
 
   getDoctorAssignedPatients,
   dischargePatient,
+  getMedicalHistory
 };
