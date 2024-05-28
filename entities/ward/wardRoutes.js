@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const wardController = require('./wardController')
 
-router.post('/wards/new', wardController.createWard)
+router.post('/wards/', wardController.createWard)
 router.get('/wards', wardController.getAllWards)
 router.get('/wards/:id', wardController.getWardById)
 router.get('/departments/:id/wards', wardController.getWardsByDepartment)
