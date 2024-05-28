@@ -28,5 +28,5 @@ const dptSchema = new Schema({
     }]
 })
 
-const Department = mongoose.model('Department'. dptSchema)
+const Department = mongoose.model('Department', dptSchema)
 module.exports = Department
