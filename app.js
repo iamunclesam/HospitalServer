@@ -1,12 +1,14 @@
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
+const cors = require('cors')
 const createError = require("http-errors");
 const dotenv = require('dotenv');
 const connectDB = require('./helpers/init_mongodb.js');
 const patientRoute = require('./entities/patient/patientRoutes.js')
 const adminRoute = require('./entities/admin/adminRoute.js')
 const doctorRoute = require('./entities/doctor/doctorRoutes.js');
+const wardRoute = require('./entities/ward/wardRoutes.js')
 
 const { authenticateToken, authorizeRoute, authorizeRole } = require('./middlewares/auth.js');
 
@@ -23,13 +25,14 @@ const PORT = process.env.PORT || 5050;
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan("dev"));
+app.use(cors())
 
 app.get("/", (req, res) => {
   res.send({ message: "Welcome to sam clinic" });
 });
 
 // Protected Routes
-app.use('/api', patientRoute, adminRoute, doctorRoute);
+app.use('/api', patientRoute, adminRoute, doctorRoute, wardRoute);
 
 
 // Fallback route for undefined routes
