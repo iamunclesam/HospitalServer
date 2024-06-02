@@ -1,70 +1,95 @@
-const jwt = require('jsonwebtoken');
-const { rolePermissions, jwtSecret } = require('../roleConfig');
+const JWT = require("jsonwebtoken");
+const createError = require("http-errors");
 
-const signAccessToken = (userId, role) => {
-  return new Promise((resolve, reject) => {
-    const payload = { role };
+module.exports = {
+  signAccessToken: (userId, role) => {
+    return new Promise((resolve, reject) => {
+      const payload = {_id: userId, role };
 
-    const secret = process.env.ACCESS_TOKEN_SECRET;
-    const options = {
-      expiresIn: "1y", // Set expiration time to one hour
-      issuer: "pickurpackage.com",
-      audience: userId,
-    };
+      const secret = process.env.ACCESS_TOKEN_SECRET;
+      const options = {
+        expiresIn: "1y", // Set expiration time to one hour
+        issuer: "pickurpackage.com",
+        audience: String(userId)
+      };
 
-    JWT.sign(payload, secret, options, (err, token) => {
-      if (err) {
-        console.error("Error signing access token:", err.message);
-        reject(
-          createError.InternalServerError("Failed to sign access token")
-        );
-      } else {
-        resolve(token);
-      }
+      JWT.sign(payload, secret, options, (err, token) => {
+        if (err) {
+          console.error("Error signing access token:", err.message);
+          reject(
+            createError.InternalServerError("Failed to sign access token")
+          );
+        } else {
+          resolve(token);
+        }
+      });
     });
-  });
-};
+  },
 
-const verifyAccessToken = (req, res, next) => {
-  if (!req.headers["authorization"]) return next(createError.Unauthorized());
+  verifyAccessToken: (req, res, next) => {
+    if (!req.headers["authorization"]) return next(createError.Unauthorized());
 
-  const authHeader = req.headers["authorization"];
-  const bearerToken = authHeader.split(" ");
-  const token = bearerToken[1];
-  JWT.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, payload) => {
-    if (err) {
-      const message =
-        err.name === "JsonWebTokenError" ? "Unauthorized" : err.message;
-      return next(createError.Unauthorized(message));
-    }
+    const authHeader = req.headers["authorization"];
+    const bearerToken = authHeader.split(" ");
+    const token = bearerToken[1];
+    JWT.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, payload) => {
+      if (err) {
+        const message =
+          err.name === "JsonWebTokenError" ? "Unauthorized" : err.message;
+        return next(createError.Unauthorized(message));
+      }
 
-    req.payload = payload;
-    next();
-  });
-};
-
-
-const authorizeRole = (...roles) => {
-  return (req, res, next) => {
-    const userRole = req.user.role;
-
-    if (roles.includes('*') || roles.includes(userRole)) {
+      console.log("Payload:", payload);
+      req.payload = payload;
       next();
-    } else {
-      res.status(403).json({ message: 'Forbidden: You do not have access to this resource' });
-    }
-  };
-};
+    });
+  },
 
-const authorizeRoute = (req, res, next) => {
-  const userRole = req.user.role;
-  const requestedRoute = req.baseUrl + req.route.path;
+  signRefreshToken: (userId) => {
+    return new Promise((resolve, reject) => {
+      const payload = {};
 
-  if (rolePermissions[userRole].includes('*') || rolePermissions[userRole].includes(requestedRoute)) {
-    next();
-  } else {
-    res.status(403).json({ message: 'Forbidden: You do not have access to this resource' });
-  }
-};
+      const secret = process.env.REFRESH_TOKEN_SECRET;
+      const options = {
+        expiresIn: "1y", // Set expiration time to one hour
+        issuer: "pickurpackage.com",
+        audience: String(userId),
+      };
 
-module.exports = { signAccessToken, verifyAccessToken, authorizeRole, authorizeRoute };
+      JWT.sign(payload, secret, options, (err, token) => {
+        if (err) {
+          console.error("Error signing access token:", err.message);
+          reject(
+            createError.InternalServerError("Failed to sign access token")
+          );
+        } else {
+          resolve(token);
+        }
+      });
+    });
+  },
+
+  verifyRefreshToken: (refreshToken) => {
+    return new Promise((resolve, reject) => {
+      JWT.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+        (err, payload) => {
+          if (err) return reject(createError.Unauthorized());
+          const userId = payload.aud;
+          resolve(userId);
+        }
+      );
+    });
+  },
+  
+  allowRoles: (...roles) => {
+    return (req, res, next) => {
+      const { role } = req.payload;
+      if (!roles.includes(role)) {
+        return next(createError.Forbidden(`Access requires one of the following roles: ${roles.join(", ")}`));
+      }
+      next();
+    };
+}
+}

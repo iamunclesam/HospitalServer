@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const DoctorSchema = mongoose.Schema({
   name: {
@@ -14,6 +16,11 @@ const DoctorSchema = mongoose.Schema({
   department: {
     type: String,
     required: true,
+  },
+
+  password: {
+    type: String,
+    required: true
   },
 
   yearsOfExperience: {
@@ -61,6 +68,27 @@ const DoctorSchema = mongoose.Schema({
   ]
 });
 
+DoctorSchema.pre('save', async function (next) {
+  try {
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(this.password, salt)
+    this.password = hashedPassword;
+    next()
+  }
+
+  catch(error) {
+    next(error)
+  }
+})
+
+DoctorSchema.methods.isValidPassword = async function (password) {
+try {
+ return await bcrypt.compare(password, this.password)
+} catch (error) {
+  throw error
+  
+}
+}
 const Doctor = mongoose.model("Doctor", DoctorSchema);
 
 module.exports = Doctor;
