@@ -1,27 +1,35 @@
-const Appointment = require('./appointmentModel');
-const Patient = require('../../entities/patient/patientModel');
-const Doctor = require('../../entities/doctor/doctorModel');
+const Patient = require("../patient/patientModel");
+const Doctor = require("../doctor/doctorModel");
+const Appointment = require("../appointment/appointmentModel");
 
 const setAppointment = async (req, res) => {
   try {
-    const {  date, reason, status } = req.body;
-    const {patientId, doctorId} = req.params
+    const { date, reason, status } = req.body;
+    const { patientId } = req.params;
+    const userValidationResult = validateUser(req);
+    if (userValidationResult.error) {
+      return res.status(400).json({ error: userValidationResult.error });
+    }
+
+    const { userId, role, doctorId } = userValidationResult;
 
     // Validate patient ID
     const patient = await Patient.findById(patientId);
     if (!patient) {
-      return res.status(404).json({ message: 'Patient not found' });
+      return res.status(404).json({ message: "Patient not found" });
     }
 
     // Validate doctor ID
     const doctor = await Doctor.findById(doctorId);
     if (!doctor) {
-      return res.status(404).json({ message: 'Doctor not found' });
+      return res.status(404).json({ message: "Doctor not found" });
     }
 
     // Validate appointment date
     if (new Date(date) <= new Date()) {
-      return res.status(400).json({ message: 'Appointment date must be in the future' });
+      return res
+        .status(400)
+        .json({ message: "Appointment date must be in the future" });
     }
 
     // Create a new appointment
@@ -30,12 +38,14 @@ const setAppointment = async (req, res) => {
       doctor: doctorId,
       date,
       reason,
-      status
+      status,
     });
 
     await appointment.save();
 
-    res.status(201).json({ message: 'Appointment scheduled successfully', appointment });
+    res
+      .status(201)
+      .json({ message: "Appointment scheduled successfully", appointment });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -43,7 +53,13 @@ const setAppointment = async (req, res) => {
 
 const updateAppointment = async (req, res) => {
   try {
-    const { patientId, doctorId, appointmentId } = req.params;
+    const { patientId, appointmentId } = req.params;
+    const userValidationResult = validateUser(req);
+    if (userValidationResult.error) {
+      return res.status(400).json({ error: userValidationResult.error });
+    }
+
+    const { userId, role, doctorId } = userValidationResult;
 
     const patient = await Patient.findById(patientId).populate(
       "currentRecord.assignedDoctor"
@@ -54,7 +70,7 @@ const updateAppointment = async (req, res) => {
 
     const doctor = await Doctor.findById(doctorId);
 
-    if(!doctor){
+    if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
@@ -71,27 +87,37 @@ const updateAppointment = async (req, res) => {
         message:
           "Access denied: No records assigned to this doctor for this patient",
       });
-    } 
+    }
 
-    const updatedAppointment = await Appointment.findByIdAndUpdate(req.body, appointmentId)
-    res.status(200).json({message: "appointment updated", data: updatedAppointment})
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      req.body,
+      appointmentId
+    );
+    res
+      .status(200)
+      .json({ message: "appointment updated", data: updatedAppointment });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
 
 const getAllAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find({});
-    res.status(200).json({data: appointments})
+    res.status(200).json({ data: appointments });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
+
+const cancelAppointment = async (req, res) => {
+  try {
+  } catch (error) {}
+};
 
 module.exports = {
   setAppointment,
   updateAppointment,
-  getAllAppointments
-  // Other appointment-related functions
+  getAllAppointments,
+  cancelAppointment,
 };

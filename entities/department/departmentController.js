@@ -3,12 +3,10 @@ const Department = require("./departmentModel");
 
 const newDepartment = async (req, res) => {
   try {
-    const department = await new Department(req.body);
-    const savedDepartment = await department.save();
-
-    res.status(201).json({ savedDepartment });
+    const department = await Department.create(req.body);
+    res.status(201).json({message: "Department created Successfully", data: department });
   } catch (err) {
-    res.status(500).error({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -21,7 +19,7 @@ const getAllDepartments = async (req, res) => {
 
     res.status(201).json(departments);
   } catch (err) {
-    res.status(500).error({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -36,7 +34,7 @@ const getDepartmentById = async (req, res) => {
     }
     res.status(201).json(department);
   } catch (err) {
-    res.status(500).error({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -56,7 +54,7 @@ const updateDepartment = async (req, res) => {
     const updatedDpt = await Department.save();
     res.status(201).json({ updatedDpt });
   } catch (err) {
-    res.status(500).error({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -64,11 +62,11 @@ const deleteDepartment = async (req, res) => {
   try {
     const department = await Department.findByIdAndDelete(req.params.id);
     if (!department) {
-      res.status(404).error({ message: "Could not find department" });
+      res.status(404).json({ message: "Could not find department" });
     }
     res.status(201).json({ message: "Department deleted successfully." });
   } catch (err) {
-    res.status(500).error({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 

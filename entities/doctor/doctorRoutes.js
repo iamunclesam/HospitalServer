@@ -1,24 +1,100 @@
 const express = require("express");
 const router = express.Router();
-const { verifyAccessToken, allowRoles } = require('../../middlewares/auth');
-const { getAllDoctors, getDoctorAssignedPatients, viewPatientRecords, updatePatientRecords, dischargePatient, getMedicalHistory, getDoctorByEmail } = require("../doctor/doctorController");
-const { setAppointment, updateAppointment, getAllAppointments} = require("../appointment/appointmentController");
+const { verifyAccessToken, allowRoles } = require("../../middlewares/auth");
+const {
+  getAllDoctors,
+  getDoctorByEmail,
+  updatePatientRecords,
+} = require("../doctor/doctorController");
+const {
+  getDoctorAssignedPatients,
+  viewPatientRecords,
+  dischargePatient,
+  getMedicalHistory,
+  admitPatient,
+  updatePatientCurrentRecord,
+} = require("../Shared/patientService");
+const {
+  setAppointment,
+  updateAppointment,
+  getAllAppointments,
+} = require("../Shared/appointmentService");
 
+/** FETCH ALL DOCTORS */
 router.get("/doctors", verifyAccessToken, allowRoles("admin"), getAllDoctors);
 
-router.get("/doctor-email", verifyAccessToken, allowRoles("admin"), getDoctorByEmail)
+/** FETCH DOCTOR BY EMAIL */
+router.get(
+  "/doctor-email",
+  verifyAccessToken,
+  allowRoles("admin"),
+  getDoctorByEmail
+);
 
-router.get("/doctor/patients", verifyAccessToken, allowRoles("admin", "doctor"),getDoctorAssignedPatients)
-router.get("/doctor/patients/:patientId/record", viewPatientRecords)
-router.put("/doctor/:patientId/:recordId/record-update", updatePatientRecords)
-router.post("/doctor/:patientId/appointment", verifyAccessToken, allowRoles("admin", "doctor"), setAppointment )
-router.post("/doctor/:patientId/discharge", dischargePatient )
+/** GET ASSIGNED PATIENT */
+router.get(
+  "/doctor/patients",
+  verifyAccessToken,
+  allowRoles("admin", "doctor"),
+  getDoctorAssignedPatients
+);
 
-router.get("/doctor/:patientId/history", getMedicalHistory )
+/** VIEW PATIENT RECORD */
+router.get(
+  "/doctor/patients/:patientId/record",
+  verifyAccessToken,
+  allowRoles("admin", "doctor"),
+  viewPatientRecords
+);
 
-router.put("/doctor/:doctorId/:patientId/:appointmentId/update-appointment", updateAppointment )
+/** UPDATE PATIENT RECORD */
+router.put(
+  "/doctor/:patientId/:recordId/record-update",
+  verifyAccessToken,
+  allowRoles("doctor"),
+  updatePatientRecords
+);
 
-router.get("/all-appointments", getAllAppointments )
+/** SET APPOINTMENT */
+router.post(
+  "/doctor/:patientId/appointment",
+  verifyAccessToken,
+  allowRoles("admin", "doctor"),
+  setAppointment
+);
 
+/** DISCHARGE PATIENT */
+router.post(
+  "/doctor/:patientId/discharge",
+  verifyAccessToken,
+  allowRoles("admin", "doctor"),
+  dischargePatient
+);
 
-module.exports = router
+/** GET MEDICAL RECORD */
+router.get(
+  "/doctor/:patientId/history",
+  verifyAccessToken,
+  allowRoles("admin", "doctor"),
+  getMedicalHistory
+);
+
+/** UPDATE APPOINTMENT */
+router.put(
+  "/doctor/:doctorId/:patientId/:appointmentId/update-appointment",
+  verifyAccessToken,
+  allowRoles("doctor"),
+  updateAppointment
+);
+
+/** ADMIT PATIENT */
+router.post(
+  "/doctor/:patientId/admit-patient",
+  verifyAccessToken,
+  allowRoles("doctor"),
+  admitPatient
+);
+
+router.get("/all-appointments", getAllAppointments);
+
+module.exports = router;

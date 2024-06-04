@@ -14,7 +14,7 @@ const wardSchema = new Schema({
         type : Number,
         required : true
     },
-    currectOccupant : {
+    currentOccupant : {
         type : String,
         required : true
     },

@@ -1,40 +1,11 @@
 const mongoose = require("mongoose");
 
-const MedicalHistorySchema = new mongoose.Schema({
-  ailment: {
-    type: String,
-    required: true,
-  },
-  assignedDoctor: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Doctor",
-    required: true,
-  },
-  medications: {
-    type: [String],
-    default: [],
-  },
-  
-  dateOfAdmission: {
-    type: Date,
-    required: true,
-  },
-  dateOfDischarge: {
-    type: Date,
-    default: null,
-  },
-});
 
 const recordSchema =  new mongoose.Schema({
   assignedDoctor: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Doctor'
   },
-  dateOfAdmission: {
-    type: Date,
-    required: true
-  },
-  dateOfDischarge: Date,
   symptoms: String,
   diagnosis: String,
   treatmentPlan: String,
@@ -46,7 +17,6 @@ const recordSchema =  new mongoose.Schema({
     }
   ],
   notes: String,
-  ward: mongoose.Schema.Types.ObjectId
 });
 
 const PatientSchema = new mongoose.Schema({
@@ -96,7 +66,6 @@ const PatientSchema = new mongoose.Schema({
   },
 
   currentRecord: [recordSchema]
-  
   
 });
 

@@ -37,6 +37,8 @@ const createAdminAccount = async (req, res) => {
   }
 };
 
+
+
 const adminLogin = async (req, res, next) => {
   try {
     // const result = await authSchema.validateAsync(req.body);
@@ -60,6 +62,9 @@ const adminLogin = async (req, res, next) => {
     next(error);
   }
 };
+
+
+/** PATIENT SERVICES */
 
 const assignPatientToDoctor = async (req, res) => {
   try {
@@ -122,8 +127,13 @@ const assignPatientToDoctor = async (req, res) => {
 };
 
 
+
+
 module.exports = {
   assignPatientToDoctor,
   createAdminAccount,
-  adminLogin
+  adminLogin,
+
+
+ 
 };

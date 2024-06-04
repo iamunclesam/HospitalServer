@@ -5,13 +5,11 @@ const cors = require('cors')
 const createError = require("http-errors");
 const dotenv = require('dotenv');
 const connectDB = require('./helpers/init_mongodb.js');
-const patientRoute = require('./entities/patient/patientRoutes.js')
+// const patientRoute = require('./entities/patient/patientRoutes.js')
 const adminRoute = require('./entities/admin/adminRoute.js')
 const doctorRoute = require('./entities/doctor/doctorRoutes.js');
 const wardRoute = require('./entities/ward/wardRoutes.js')
 const departmentRoute = require('./entities/department/departmentRoutes.js')
-
-const { authenticateToken, authorizeRoute, authorizeRole } = require('./middlewares/auth.js');
 
 
 
@@ -33,7 +31,7 @@ app.get("/", (req, res) => {
 });
 
 // Protected Routes
-app.use('/api', patientRoute, adminRoute, doctorRoute, wardRoute, departmentRoute);
+app.use('/api', adminRoute, doctorRoute, wardRoute, departmentRoute);
 
 
 // Fallback route for undefined routes

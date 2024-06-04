@@ -4,34 +4,55 @@ const Department = require('../department/departmentModel')
 
 // Create a new ward
 const createWard = async (req, res) => {
-    try {
-      const { name, departmentId, capacity, currentOccupancy, patients, staff, location, numberOfBeds } = req.body;
-  
-      const department = await Department.findById(departmentId);
-      if (!department) {
-        return res.status(404).json({ message: 'Department not found' });
-      }
-  
-      const ward = new Ward({
-        name,
-        department: departmentId,
-        capacity,
-        currentOccupancy,
-        patients,
-        staff,
-        location,
-        numberOfBeds
-      });
-  
-      const newWard = await ward.save();
-      department.wards.push(newWard._id);
-      await department.save();
-  
-      res.status(201).json(newWard);
-    } catch (err) {
-      res.status(400).json({ message: 'Internal Server Error' });
+  try {
+    const {
+      name,
+      departmentId, // Assuming this is now an array
+      capacity,
+      currentOccupant,
+      patients,
+      staff,
+      location,
+      numberOfBeds
+    } = req.body;
+
+    if (!name || !departmentId || !capacity || !currentOccupant || !location || !numberOfBeds) {
+      return res.status(400).json({ message: 'Missing required fields' });
     }
-  };
+
+    // Validate each department ID
+    const departments = await Department.find({ '_id': { $in: departmentId } });
+    if (departments.length !== departmentId.length) {
+      return res.status(404).json({ message: 'One or more departments not found' });
+    }
+
+    const ward = new Ward({
+      name,
+      department: departmentId,
+      capacity,
+      currentOccupant,
+      patients,
+      staff,
+      location,
+      numberOfBeds
+    });
+
+    const newWard = await ward.save();
+
+    // Update each department with the new ward ID
+    await Department.updateMany(
+      { '_id': { $in: departmentId } },
+      { $push: { wards: newWard._id } }
+    );
+
+    res.status(201).json(newWard);
+  } catch (err) {
+    console.error(err);  // Log the error for debugging
+    res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  }
+};
+
+
 
 //getting ward by Id
 const getWardById = async (req, res) => {
