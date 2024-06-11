@@ -19,8 +19,10 @@ const wardSchema = new Schema({
         required : true
     },
     patients : [{
+       patientId: {
         type : Schema.Types.ObjectId,
         ref : 'patient'
+       }
     }],
     staff : [{
         type : Schema.Types.ObjectId,
@@ -33,7 +35,19 @@ const wardSchema = new Schema({
     numberOfBeds : {
         type : Number,
         required : true
-    }
+    },
+    assignedNurses: [{
+        nurseName: {
+            type: String,
+            required: true
+        },
+
+        nurseId: {
+            type: Schema.Types.ObjectId,
+            required: true
+        }
+
+    }]
 })
 
 const Ward = mongoose.model('Ward', wardSchema)

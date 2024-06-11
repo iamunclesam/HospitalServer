@@ -54,7 +54,7 @@ const setAppointment = async (req, res) => {
 const updateAppointment = async (req, res) => {
   try {
     const { patientId, appointmentId } = req.params;
-    const userValidationResult = validateUser(req);
+    const userValidationResult = validateUser(req, res);
     if (userValidationResult.error) {
       return res.status(400).json({ error: userValidationResult.error });
     }
@@ -112,7 +112,30 @@ const getAllAppointments = async (req, res) => {
 
 const cancelAppointment = async (req, res) => {
   try {
-  } catch (error) {}
+    const { patientId, appointmentId } = req.params;
+    const userValidationResult = validateUser(req, res);
+    if (userValidationResult.error) {
+      return res.status(400).json({ error: userValidationResult.error });
+    }
+
+    const { userId, role, doctorId } = userValidationResult;
+
+    const patient = await Patient.findById(patientId).populate(
+      "currentRecord.assignedDoctor"
+    );
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    const doctor = await Doctor.findById(doctorId);
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 module.exports = {

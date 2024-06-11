@@ -34,6 +34,30 @@ const createDoctor = async (req, res) => {
   }
 };
 
+const doctorLogin = async (req, res, next) => {
+  try {
+    // const result = await authSchema.validateAsync(req.body);
+    const result = await req.body;
+
+    const user = await Doctor.findOne({ email: result.email });
+
+    if (!user) throw createHttpError.NotFound("User not registered");
+
+    const isMatch = await user.isValidPassword(result.password);
+
+    if (!isMatch)
+      throw createHttpError.Unauthorized("Email or password not valid");
+
+    const accessToken = await signAccessToken(user._id, user.role);
+    const refreshToken = await signRefreshToken(user._id);
+    res.send({ accessToken, refreshToken });
+  } catch (error) {
+    if (error.isJoi == true)
+      return next(createHttpError.BadRequest("Invalid Email/Password"));
+    next(error);
+  }
+};
+
 const getAllDoctors = async (req, res, next) => {
   try {
     const doctors = await Doctor.find({});
@@ -88,30 +112,6 @@ const updateDoctor = async (req, res) => {
   }
 };
 
-const doctorLogin = async (req, res, next) => {
-  try {
-    // const result = await authSchema.validateAsync(req.body);
-    const result = await req.body;
-
-    const user = await Doctor.findOne({ email: result.email });
-
-    if (!user) throw createHttpError.NotFound("User not registered");
-
-    const isMatch = await user.isValidPassword(result.password);
-
-    if (!isMatch)
-      throw createHttpError.Unauthorized("Email or password not valid");
-
-    const accessToken = await signAccessToken(user._id, user.role);
-    const refreshToken = await signRefreshToken(user._id);
-    res.send({ accessToken, refreshToken });
-  } catch (error) {
-    if (error.isJoi == true)
-      return next(createHttpError.BadRequest("Invalid Email/Password"));
-    next(error);
-  }
-};
-
 /**  DOCTOR - PATIENTS */
 
 const updatePatientRecords = async (req, res) => {
@@ -121,8 +121,8 @@ const updatePatientRecords = async (req, res) => {
     if (!req.payload) {
       return res.status(400).json({ error: "Payload missing from request" });
     }
-  
-    const { aud: userId} = req.payload;
+
+    const { aud: userId } = req.payload;
     let doctorId = userId;
 
     const patient = await Patient.findById(patientId);
@@ -186,11 +186,9 @@ const writePrescription = async (req, res) => {
     }
 
     if (!record.assignedDoctor.equals(doctorId)) {
-      res
-        .status(403)
-        .json({
-          message: "Doctor have no permission to prescribe to this patient",
-        });
+      res.status(403).json({
+        message: "Doctor have no permission to prescribe to this patient",
+      });
     }
 
     // Create a new prescription
@@ -220,7 +218,7 @@ const writePrescription = async (req, res) => {
   }
 };
 
- const createTreatmentPlan = async (req, res) => {
+const createTreatmentPlan = async (req, res) => {
   // Logic to create a treatment plan
 };
 

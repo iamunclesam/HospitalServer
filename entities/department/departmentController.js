@@ -1,10 +1,13 @@
 //new department, get all departments, update departments, delete department
+const Admission = require("../admission/admissionModel");
 const Department = require("./departmentModel");
 
 const newDepartment = async (req, res) => {
   try {
     const department = await Department.create(req.body);
-    res.status(201).json({message: "Department created Successfully", data: department });
+    res
+      .status(201)
+      .json({ message: "Department created Successfully", data: department });
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -12,12 +15,9 @@ const newDepartment = async (req, res) => {
 
 const getAllDepartments = async (req, res) => {
   try {
-    const departments = await Department.find()
-      .populate("staff", "name role")
-      .populate("doctors", "name specialty")
-      .populate("nurses", "name");
+    const departments = await Department.find({});
 
-    res.status(201).json(departments);
+    res.status(200).json(departments);
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -70,10 +70,35 @@ const deleteDepartment = async (req, res) => {
   }
 };
 
+const allPatientInDepartment = async (req, res) => {
+  try {
+    const { departmentId } = req.params;
+    const department = await Department.findById(departmentId);
+
+    if (!department) {
+      res.status(404).json({ message: "Department does not exist" });
+    }
+
+    let admittedPatient = await Admission.find({});
+    let newRecord = admittedPatient.find((record) =>
+      record.departmentId.equals(departmentId)
+    );
+
+    if (!newRecord) {
+      res.status(404).json({ message: "not found" });
+    }
+
+    res.status(200).json({ data: newRecord });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   newDepartment,
   getAllDepartments,
   getDepartmentById,
   updateDepartment,
   deleteDepartment,
+  allPatientInDepartment,
 };

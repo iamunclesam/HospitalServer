@@ -2,6 +2,7 @@
 const Patient = require("../patient/patientModel");
 const { signAccessToken, signRefreshToken } = require("../../middlewares/auth");
 const Admin = require("../admin/adminModel");
+const Doctor = require("../doctor/doctorModel");
 
 const createAdminAccount = async (req, res) => {
   try {
@@ -37,8 +38,6 @@ const createAdminAccount = async (req, res) => {
   }
 };
 
-
-
 const adminLogin = async (req, res, next) => {
   try {
     // const result = await authSchema.validateAsync(req.body);
@@ -63,9 +62,7 @@ const adminLogin = async (req, res, next) => {
   }
 };
 
-
 /** PATIENT SERVICES */
-
 const assignPatientToDoctor = async (req, res) => {
   try {
     const { email } = req.body;
@@ -126,14 +123,8 @@ const assignPatientToDoctor = async (req, res) => {
   }
 };
 
-
-
-
 module.exports = {
   assignPatientToDoctor,
   createAdminAccount,
   adminLogin,
-
-
- 
 };

@@ -24,10 +24,17 @@ const admitPatient = async (req, res) => {
       departmentId,
       wardId,
       roomNumber,
-      bedNumber
+      bedNumber,
     } = req.body;
 
-    if (!patientId || !reasonForAdmission || !roomNumber || !departmentId || !wardId || !notes) {
+    if (
+      !patientId ||
+      !reasonForAdmission ||
+      !roomNumber ||
+      !departmentId ||
+      !wardId ||
+      !notes
+    ) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -63,7 +70,7 @@ const admitPatient = async (req, res) => {
       notes,
       ward: ward._id,
       departmentId: department._id,
-      bedNumber
+      bedNumber,
     });
 
     await newAdmission.save();
@@ -75,6 +82,15 @@ const admitPatient = async (req, res) => {
     });
   } catch (error) {
     console.error("Internal Server Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const allAdmittedPatient = async (req, res) => {
+  try {
+    const admittedPatients = await Admission.find({});
+    res.status(200).json({ message: "successfully", data: admittedPatients });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
@@ -243,6 +259,7 @@ const getMedicalHistory = async (req, res) => {
 module.exports = {
   viewPatientRecords,
   admitPatient,
+  allAdmittedPatient,
   getDoctorAssignedPatients,
   dischargePatient,
   getMedicalHistory,

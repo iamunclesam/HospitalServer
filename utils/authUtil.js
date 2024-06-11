@@ -22,7 +22,9 @@ function validateUser(req, res) {
       }
     } else if (role === "doctor") {
       doctorId = userId;
-    } else {
+    }
+    
+    else {
       return res.status(403).json({ message: "Access forbidden: invalid role" });
     }
   

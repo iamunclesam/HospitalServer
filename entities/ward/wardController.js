@@ -1,6 +1,8 @@
 //create ward, get ward by id, get all wards in a department, get all wards, update ward by id, delete ward
 const Ward = require('./wardModel')
-const Department = require('../department/departmentModel')
+const Department = require('../department/departmentModel');
+const Nurse = require('../nurse/nurseModel');
+
 
 // Create a new ward
 const createWard = async (req, res) => {
@@ -51,8 +53,6 @@ const createWard = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
 };
-
-
 
 //getting ward by Id
 const getWardById = async (req, res) => {
@@ -144,11 +144,44 @@ const deleteWard = async (req, res) => {
     }
 };
 
+//assign nurse to ward
+const assignNurseToWard = async (req, res) => {
+  try {
+    const {nurseId, wardId} = req.params;
+    
+    const nurse = await Nurse.findById(nurseId);
+    const ward = await Ward.findById(wardId)
+
+    if(nurse && ward) {
+      res.status(404).json({message: "Id not identified"})
+    }
+
+    let assignNurse = ward.assignedNurses;
+
+    const nurseRecord = assignNurse.find((record) => record.nurseId.equals(nurse._id))
+
+    if(!nurseRecord) {
+      assignNurse.push({
+        nurseName: nurse.name,
+        nurseId: nurse._id
+      })
+    }
+     await ward.save();
+     res.status(200)
+     .json({message: "Nurse assigned to ward successfully"})
+    
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+}
+
 module.exports = {
     createWard,
     getWardById,
     getWardsByDepartment,
     getAllWards,
     updateWard,
-    deleteWard
+    deleteWard,
+
+    assignNurseToWard
 }

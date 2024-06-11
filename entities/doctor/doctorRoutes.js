@@ -4,6 +4,7 @@ const { verifyAccessToken, allowRoles } = require("../../middlewares/auth");
 const {
   getAllDoctors,
   getDoctorByEmail,
+  doctorLogin,
   updatePatientRecords,
 } = require("../doctor/doctorController");
 const {
@@ -19,6 +20,12 @@ const {
   updateAppointment,
   getAllAppointments,
 } = require("../Shared/appointmentService");
+
+
+
+
+
+router.post("/doctor/login", verifyAccessToken, doctorLogin)
 
 /** FETCH ALL DOCTORS */
 router.get("/doctors", verifyAccessToken, allowRoles("admin"), getAllDoctors);
