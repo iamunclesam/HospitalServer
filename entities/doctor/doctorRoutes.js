@@ -28,7 +28,7 @@ const {
 router.post("/doctor/login", verifyAccessToken, doctorLogin)
 
 /** FETCH ALL DOCTORS */
-router.get("/doctors", verifyAccessToken, allowRoles("admin"), getAllDoctors);
+router.get("/doctors", getAllDoctors);
 
 /** FETCH DOCTOR BY EMAIL */
 router.get(
