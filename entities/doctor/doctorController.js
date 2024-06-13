@@ -88,10 +88,18 @@ const getDoctorByEmail = async (req, res) => {
 
 const getDoctorById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const doctor = await Doctor.findById(id);
+    const { doctorId } = req.params;
+    console.log('ID parameter:', doctorId); // Log the ID parameter for debugging
+
+    const doctor = await Doctor.findById(doctorId);
+
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
     res.status(200).json(doctor);
   } catch (error) {
+    console.error('Error fetching doctor:', error.message); // Log the error for debugging
     res.status(500).json({ message: error.message });
   }
 };
