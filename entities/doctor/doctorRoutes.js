@@ -39,7 +39,7 @@ router.get(
 
 router.get(
   "/doctor/:doctorId/details",
-  getDoctorByEmail
+  getDoctorById
 );
 /** GET ASSIGNED PATIENT */
 router.get(
