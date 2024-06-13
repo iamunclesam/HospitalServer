@@ -30,9 +30,12 @@ const createPatient = async (req, res) => {
   
   const getPatientById = async (req, res) => {
     try {
-      const { id } = req.param;
-      const patient = await Patient.findById(id);
-      res.status(200).Json(patient)
+      const { patientId } = req.param;
+      const patient = await Patient.findById(patientId);
+      if(!patient) {
+        res.status(404).json({message: "Patient not found"})
+      }
+      res.status(200).json(patient)
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

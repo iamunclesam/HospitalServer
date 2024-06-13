@@ -55,7 +55,7 @@ router.get("/admin/all-patients", getAllPatient);
 
 router.put("/admin/update-patient", updatePatient);
 
-router.get("/admin/patient-details", getPatientById);
+router.get("/admin/:patientId/patient-details", getPatientById);
 
 router.post(
   "/admin/admit-patient",
