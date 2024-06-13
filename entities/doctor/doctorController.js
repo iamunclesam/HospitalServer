@@ -88,9 +88,9 @@ const getDoctorByEmail = async (req, res) => {
 
 const getDoctorById = async (req, res) => {
   try {
-    const { id } = req.param;
+    const { id } = req.params;
     const doctor = await Doctor.findById(id);
-    res.status(200).Json(doctor);
+    res.status(200).json(doctor);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
