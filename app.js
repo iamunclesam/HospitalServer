@@ -11,6 +11,7 @@ const doctorRoute = require('./entities/doctor/doctorRoutes.js');
 const wardRoute = require('./entities/ward/wardRoutes.js')
 const departmentRoute = require('./entities/department/departmentRoutes.js')
 const nurseRoute = require('./entities/nurse/nurseRoutes.js')
+const loginRoute = require('./entities/auth/loginRoute.js')
 
 
 // Load environment variables from .env file
@@ -31,7 +32,7 @@ app.get("/", (req, res) => {
 });
 
 // Protected Routes
-app.use('/api', adminRoute, doctorRoute, wardRoute, departmentRoute, nurseRoute);
+app.use('/api', adminRoute, doctorRoute, wardRoute, departmentRoute, nurseRoute, loginRoute);
 
 
 // Fallback route for undefined routes
