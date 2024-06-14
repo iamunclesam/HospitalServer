@@ -39,7 +39,8 @@ const loginUser = async (req, res, next) => {
 
     const accessToken = await signAccessToken(user._id, userRole);
     const refreshToken = await signRefreshToken(user._id);
-    res.send({ accessToken, refreshToken });
+    const role = userRole;
+    res.send({ accessToken, refreshToken, role});
   } catch (error) {
     if (error.isJoi === true)
       return next(createHttpError.BadRequest("Invalid Email/Password"));
