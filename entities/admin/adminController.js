@@ -33,7 +33,7 @@ const createAdminAccount = async (req, res) => {
 
     // Send tokens in response
     res.status(201).send({ accessToken, refreshToken });
-  }  catch (error) {
+  } catch (error) {
     res.status(400).send(error);
   }
 };
