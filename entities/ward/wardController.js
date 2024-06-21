@@ -14,6 +14,8 @@ const createWard = async (req, res) => {
       currentOccupant,
       patients,
       staff,
+      beds,
+      assignedNurses,
       location,
       numberOfBeds
     } = req.body;
@@ -30,12 +32,14 @@ const createWard = async (req, res) => {
 
     const ward = new Ward({
       name,
-      department: departmentId,
+      departmentId,
       capacity,
       currentOccupant,
       patients,
       staff,
+      beds,
       location,
+      assignedNurses,
       numberOfBeds
     });
 
@@ -69,16 +73,20 @@ const getWardById = async (req, res) => {
 
 // getting ward in a department
 const getWardsByDepartment = async (req, res) => {
-    try {
-      const department = await Department.findById(req.params.departmentId).populate('wards');
-      if (!department) {
-        return res.status(404).json({ message: 'Department not found' });
+  try {
+      const wards = await Ward.find({ departmentId: req.params.id });
+
+      if (!wards || wards.length === 0) {
+          return res.status(404).json({ message: 'No wards found for the department' });
       }
-      res.json(department.wards);
-    } catch (err) {
+
+      res.json(wards);
+  } catch (err) {
+      console.error('Error fetching wards by department:', err);
       res.status(500).json({ message: 'Internal Server Error' });
-    }
+  }
 };
+
 
 //getting all wards
 const getAllWards = async (req, res) => {

@@ -10,6 +10,7 @@ const Ward = require("../ward/wardModel");
 
 const admitPatient = async (req, res) => {
   try {
+    // Validate user and get userId, role, and doctorId from validation result
     const userValidationResult = validateUser(req, res);
     if (userValidationResult.error) {
       return res.status(400).json({ error: userValidationResult.error });
@@ -17,6 +18,7 @@ const admitPatient = async (req, res) => {
 
     const { userId, role, doctorId } = userValidationResult;
 
+    // Destructure required fields from request body
     const {
       patientId,
       notes,
@@ -27,24 +29,19 @@ const admitPatient = async (req, res) => {
       bedNumber,
     } = req.body;
 
-    if (
-      !patientId ||
-      !reasonForAdmission ||
-      !roomNumber ||
-      !departmentId ||
-      !wardId ||
-      !notes
-    ) {
+    // Check if required fields are present
+    if (!patientId || !reasonForAdmission || !roomNumber || !departmentId || !wardId || !notes) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const [patient, doctor, department, ward] = await Promise.all([
+    // Fetch patient, doctor, and department (with populated ward)
+    const [patient, doctor, department] = await Promise.all([
       Patient.findById(patientId),
       Doctor.findById(doctorId),
-      Department.findById(departmentId),
-      Ward.findById(wardId),
+      Department.findById(departmentId).populate('ward'),
     ]);
 
+    // Check if patient, doctor, and department exist
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
@@ -57,10 +54,39 @@ const admitPatient = async (req, res) => {
       return res.status(404).json({ message: "Department not found" });
     }
 
-    if (!ward) {
-      return res.status(404).json({ message: "Ward not found" });
+    // Check if department has a ward
+    if (!department.ward) {
+      return res.status(404).json({ message: "Ward not assigned to department" });
     }
 
+    const ward = department.ward;
+
+    // Find the index of the bed by bedNumber
+    const bedIndex = ward.beds.findIndex(bed => bed.number === bedNumber);
+
+    // Check if bed with bedNumber exists in the ward
+    if (bedIndex === -1) {
+      return res.status(404).json({ message: "Bed number not found in ward" });
+    }
+
+    // Check if the bed is already taken
+    if (ward.beds[bedIndex].status === 'taken') {
+      return res.status(400).json({ message: "Bed is already taken" });
+    }
+
+    // Update bed status to 'taken'
+    ward.beds[bedIndex].status = 'taken';
+
+    // Check if all beds are taken in the ward
+    const allBedsTaken = ward.beds.every(bed => bed.status === 'taken');
+    if (allBedsTaken) {
+      ward.status = 'filled up';
+    }
+
+    // Save updated ward
+    await ward.save();
+
+    // Create new Admission instance and save
     const newAdmission = new Admission({
       patient: patient._id,
       assignedDoctor: doctor._id,
@@ -74,8 +100,10 @@ const admitPatient = async (req, res) => {
     });
 
     await newAdmission.save();
-    console.log("Saved");
 
+    console.log("Patient admitted successfully");
+
+    // Respond with success message and admission details
     res.status(201).json({
       message: "Patient admitted successfully",
       admission: newAdmission,
@@ -85,6 +113,7 @@ const admitPatient = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 const allAdmittedPatient = async (req, res) => {
   try {

@@ -6,7 +6,7 @@ const wardSchema = new Schema({
         type : String,
         required : true
     },
-    department : [{
+    departmentId : [{
         type : Schema.Types.ObjectId,
         ref : 'department'
     }],
@@ -18,15 +18,22 @@ const wardSchema = new Schema({
         type : String,
         required : true
     },
+    beds: [{
+        number: {
+            type: Number,
+            required: true
+        },
+        status: {
+            type: String,
+            enum: ['available', 'taken'],
+            default: 'available'
+        }
+    }],
     patients : [{
        patientId: {
         type : Schema.Types.ObjectId,
         ref : 'patient'
        }
-    }],
-    staff : [{
-        type : Schema.Types.ObjectId,
-        ref : 'staff'
     }],
     location : {
         type : String, 

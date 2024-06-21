@@ -25,10 +25,7 @@ const getAllDepartments = async (req, res) => {
 
 const getDepartmentById = async (req, res) => {
   try {
-    const department = await Department.find(req.params.id)
-      .populate("staff", "name role")
-      .populate("doctors", "name specialization")
-      .populate("nurses", "name");
+    const department = await Department.findById(req.params)
     if (!department) {
       res.status(404).json({ message: "Could not locate department." });
     }
