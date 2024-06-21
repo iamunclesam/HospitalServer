@@ -3,10 +3,11 @@ const Admin = require("../admin/adminModel");
 const Doctor = require("../doctor/doctorModel");
 const Nurse = require("../nurse/nurseModel");
 const { signAccessToken, signRefreshToken } = require("../../middlewares/auth");
+const bcrypt = require('bcryptjs')
 
 const loginUser = async (req, res, next) => {
   try {
-    const { email, password } = await req.body;
+    const { email, password } = req.body;
 
     let user;
     let userRole;
@@ -29,30 +30,27 @@ const loginUser = async (req, res, next) => {
       }
     }
 
-    if (!user) {
-      console.log('User not registered');
-      throw createHttpError.NotFound('User not registered');
-    }
+    if (!user) throw createHttpError.NotFound('User not registered');
 
-    console.log(`User found: ${user.email} with role: ${userRole}`);
+    // Log the found user and their role
+    console.log('Found user:', user.email, 'Role:', userRole);
 
-    const isMatch = await user.isValidPassword(password);
-    if (!isMatch) {
-      console.log('Password does not match');
-      throw createHttpError.Unauthorized('Email or password not valid');
-    }
+    // Manually hash the input password and compare it with the stored hash
+    const manualHashComparison = await bcrypt.compare(password, user.password);
+
+    // Log the result of manual hash comparison
+    console.log('Manual password hash comparison result:', manualHashComparison);
+
+    if (!manualHashComparison) throw createHttpError.Unauthorized('Email or password not valid');
 
     const accessToken = await signAccessToken(user._id, userRole);
     const refreshToken = await signRefreshToken(user._id);
     res.send({ accessToken, refreshToken, role: userRole });
   } catch (error) {
-    if (error.isJoi === true) {
-      return next(createHttpError.BadRequest('Invalid Email/Password'));
-    }
+    if (error.isJoi === true) return next(createHttpError.BadRequest('Invalid Email/Password'));
     next(error);
   }
 };
-
 
 module.exports = {
   loginUser,

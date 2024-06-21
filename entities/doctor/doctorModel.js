@@ -70,25 +70,41 @@ const DoctorSchema = mongoose.Schema({
 
 DoctorSchema.pre('save', async function (next) {
   try {
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(this.password, salt)
+    // Log the current operation
+    console.log('Hashing password for:', this.email);
+
+    if (!this.isModified('password')) return next();
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(this.password, salt);
     this.password = hashedPassword;
-    next()
-  }
 
-  catch(error) {
-    next(error)
-  }
-})
+    // Log the hashed password
+    console.log('Hashed password:', this.password);
 
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Method to compare password
 DoctorSchema.methods.isValidPassword = async function (password) {
-try {
- return await bcrypt.compare(password, this.password)
-} catch (error) {
-  throw error
-  
-}
-}
-const Doctor = mongoose.model("Doctor", DoctorSchema);
+  try {
+    // Log the password comparison operation
+    console.log('Comparing passwords for:', this.email);
+
+    const result = await bcrypt.compare(password, this.password);
+
+    // Log the comparison result
+    console.log('Password match:', result);
+
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const Doctor = mongoose.model('Doctor', DoctorSchema);
 
 module.exports = Doctor;

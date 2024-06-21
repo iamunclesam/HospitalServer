@@ -42,13 +42,13 @@ const nurseLogin = async (req, res, next) => {
 
     if(!user) throw createHttpError.NotFound("User not found")
 
-    const isMatch = await user.$isValidPassword(data.password);
+    const isMatch = await user.isValidPassword(data.password);
 
     if(!isMatch) throw createHttpError.Unauthorized("Email or password not valid");
 
     const accessToken = await signAccessToken(user._id, user.role);
     const refreshToken = await signRefreshToken(user._id);
-    res.send({ accessToken, refreshToken });
+    res.send({ accessToken, refreshToken, role: user.role });
   } catch (error) {
     if (error.isJoi == true)
       return next(createHttpError.BadRequest("Invalid Email/Password"));
